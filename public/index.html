@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Latest compiled and minified CSS -->
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi" />
+</head>
+
+<body>
+  <div id="moveText">
+<!--     <h2 id="alpha">null</h2>
+    <h2 id="beta">null</h2>
+    <h2 id="gamma">null</h2> -->
+    <h2 id="acc">null</h2>
+    <h2 id="rotG">null</h2>
+  </div>
+  <div id="pano"></div>
+  <!-- <div id="demo-container"> -->
+    <!-- <video id="inputVideo" width="300" height="200" autoplay loop></video> -->
+    <!-- <canvas id="inputCanvas" width="300" height="200"></canvas> -->
+  <!-- </div> -->
+  <link rel="stylesheet" href="style.css" type="text/css">
+  <script>
+  // SET GLOBAL OBJECT THAT BOTH FUNCTIONS CAN PUSH AND PULL HEADINGS TO!
+var global = {
+    faceFound: false,
+    zfound: false,
+    initialX: 0,
+    initialY: 0,
+    initialZ: 0,
+    varianceX: 0,
+    varianceX: 0,
+    varianceZ: 0,
+    Zcounter: 0
+};
+
+function difference(link) {
+  var diff = Math.abs(global.panorama.pov.heading % 360 - link.heading);
+  if(diff > 180)
+     diff = Math.abs(360 - diff);
+
+  return diff;
+}
+
+function moveForward () {
+  var current;
+  for (var i = 0; i < global.panorama.links.length; i++) {
+    var differ = difference(global.panorama.links[i]);
+    if (current == undefined) {
+      current = global.panorama.links[i]
+    }
+    if (difference(current) > difference(global.panorama.links[i])) {
+      current = global.panorama.links[i]
+    }
+  }
+  global.panorama.setPano(current.pano);
+}
+
+function initializePanorama () {
+  var fenway = {lat: 37.820166, lng: -122.478255};
+  var panorama = new google.maps.StreetViewPanorama(
+    document.getElementById('pano'), {
+      position: fenway,
+      pov: {
+        heading: 0,
+        pitch: 0,
+        zoom: 1
+      },
+      // linksControl: false,
+      panControl: false,
+      fullscreenControl: false,
+      addressControl: false,
+      zoomControl: false,
+      draggable: false,
+      scrollwheel: false
+    }
+  );
+  global.currentHeading = 0;
+  global.currentPitch = 0;
+  global.currentZoom = 1;
+  global.panorama = panorama;
+}
+
+  window.onload = function () {
+    var thePanorama = document.getElementById("pano")
+    var alphaDOM = document.getElementById("alpha");
+    var betaDOM = document.getElementById("beta");
+    var gammaDOM = document.getElementById("gamma");
+    var accDOM = document.getElementById("acc");
+
+    function handleOrientationEvent(e) {
+      // var alpha = e.alpha;
+      // var beta = e.beta;
+      // var gamma = e.gamma;
+      var acc = e.acceleration;
+      var rotGamma = e.rotationRate.gamma;
+
+      global.currentHeading = global.currentHeading - rotGamma
+
+      global.panorama.setPov({
+        heading: global.currentHeading / 4,
+        pitch: 0,
+        zoom: 1
+      });
+
+      // alphaDOM.innerText = alpha;
+      // betaDOM.innerText = beta;
+      // gammaDOM.innerText = gamma;
+      accDOM.innerText = acc.x;
+      rotG.innerText = rotGamma;
+    }
+
+    // window.addEventListener("deviceorientation", handleOrientationEvent, false);
+    window.addEventListener("devicemotion", handleOrientationEvent, false);
+}
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXl4A68jb-8pkVKVO0np94j41CAUobVBI&signed_in=true&callback=initializePanorama">
+  </script>
+</body>
+</html>
