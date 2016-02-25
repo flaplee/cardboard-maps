@@ -21,6 +21,11 @@ app.get("/", function (request, response) {
   response.sendFile(indexPath);
 });
 
+app.get("/data", function (request, response) {
+  console.log("GOT HERE")
+  response.status(200).send();
+});
+
 app.listen(8080, function () {
   console.log("I'm listening to you on port 8080, Jai");
 })

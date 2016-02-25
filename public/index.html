@@ -5,34 +5,38 @@
 <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
 <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=no; target-densityDpi=device-dpi" />
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
 </head>
 
 <body>
-  <div id="moveText">
-<!--     <h2 id="alpha">null</h2>
-    <h2 id="beta">null</h2>
-    <h2 id="gamma">null</h2> -->
-    <h2 id="acc">null</h2>
-    <h2 id="rotG">null</h2>
-  </div>
-  <div id="pano"></div>
-  <!-- <div id="demo-container"> -->
-    <!-- <video id="inputVideo" width="300" height="200" autoplay loop></video> -->
-    <!-- <canvas id="inputCanvas" width="300" height="200"></canvas> -->
+<div id="wrapper">
+    <div id="moveText">
+      <p id="rotation">null</p>
+      <p id="motion">null</p>
+    </div>
+  <!-- <div id="leftEye"> -->
+    <div id="pano"></div>
+    <!-- <div id="overlay"></div> -->
   <!-- </div> -->
+  <!-- <div id="rightEye"> -->
+    <div id="pano2"></div>
+    <!-- <div id="overlay2"></div> -->
+  <!-- </div> -->
+</div>
+
+<!--   <div id="demo-container">
+    <video id="inputVideo" width="300" height="200" camera="true" autoplay loop></video>
+    <canvas id="inputCanvas" width="300" height="200"></canvas>
+  </div> -->
   <link rel="stylesheet" href="style.css" type="text/css">
   <script>
   // SET GLOBAL OBJECT THAT BOTH FUNCTIONS CAN PUSH AND PULL HEADINGS TO!
 var global = {
-    faceFound: false,
-    zfound: false,
-    initialX: 0,
-    initialY: 0,
-    initialZ: 0,
-    varianceX: 0,
-    varianceX: 0,
-    varianceZ: 0,
-    Zcounter: 0
+  motionDOM: null,
+  rotationDOM: null
 };
 
 function difference(link) {
@@ -43,76 +47,102 @@ function difference(link) {
   return diff;
 }
 
-function moveForward () {
+function moveForward (panoToUse) {
   var current;
-  for (var i = 0; i < global.panorama.links.length; i++) {
-    var differ = difference(global.panorama.links[i]);
+  for (var i = 0; i < panoToUse.links.length; i++) {
+    var differ = difference(panoToUse.links[i]);
     if (current == undefined) {
-      current = global.panorama.links[i]
+      current = panoToUse.links[i]
     }
-    if (difference(current) > difference(global.panorama.links[i])) {
-      current = global.panorama.links[i]
+    if (difference(current) > difference(panoToUse.links[i])) {
+      current = panoToUse.links[i]
     }
   }
-  global.panorama.setPano(current.pano);
+  panoToUse.setPano(current.pano);
 }
 
 function initializePanorama () {
-  var fenway = {lat: 37.820166, lng: -122.478255};
-  var panorama = new google.maps.StreetViewPanorama(
-    document.getElementById('pano'), {
-      position: fenway,
+  var place = {lat: 37.820166, lng: -122.478255};
+  var mapElement = document.getElementById('pano');
+  var mapElement2 = document.getElementById('pano2');
+
+  var mapOptions = {
+      position: place,
       pov: {
         heading: 0,
         pitch: 0,
         zoom: 1
       },
-      // linksControl: false,
       panControl: false,
       fullscreenControl: false,
       addressControl: false,
       zoomControl: false,
       draggable: false,
-      scrollwheel: false
+      rotateControl: false,
+      scrollwheel: false,
+      navigationControl: false,
+      mode: "webgl"
     }
-  );
-  global.currentHeading = 0;
-  global.currentPitch = 0;
-  global.currentZoom = 1;
+  var panorama = new google.maps.StreetViewPanorama(mapElement, mapOptions);
+  var panorama2 = new google.maps.StreetViewPanorama(mapElement2, mapOptions);
+
   global.panorama = panorama;
+  global.panorama2 = panorama2;
 }
 
-  window.onload = function () {
-    var thePanorama = document.getElementById("pano")
-    var alphaDOM = document.getElementById("alpha");
-    var betaDOM = document.getElementById("beta");
-    var gammaDOM = document.getElementById("gamma");
-    var accDOM = document.getElementById("acc");
+function flnum (num) {
+  return Math.floor(num)
+}
 
-    function handleOrientationEvent(e) {
-      // var alpha = e.alpha;
-      // var beta = e.beta;
-      // var gamma = e.gamma;
-      var acc = e.acceleration;
-      var rotGamma = e.rotationRate.gamma;
+function paneSwitcher () {
+  if ($("#pano2").is(":visible")) {
+    $("#pano2").hide();
+    $("#pano").css("width", "650px")
+    google.maps.event.trigger(global.panorama, 'resize')
+  }
+  else {
+    $("#pano2").show()
+    $("#pano").css("width", "325px")
+    google.maps.event.trigger(global.panorama, 'resize')
+  }
+}
 
-      global.currentHeading = global.currentHeading - rotGamma
+function handleOrientationEvent(e) {
+  global.panorama.setPov({
+    heading: e.gamma > 0 ? -flnum(e.alpha) : -flnum(e.alpha) - 180,
+    pitch: e.gamma < 0 ? flnum(e.gamma) + 90 : flnum(e.gamma) - 90,
+    zoom: 1
+  });
+  global.panorama2.setPov({
+    heading: e.gamma > 0 ? -flnum(e.alpha) : -flnum(e.alpha) - 180,
+    pitch: e.gamma < 0 ? flnum(e.gamma) + 90 : flnum(e.gamma) - 90,
+    zoom: 1
+  });
+  global.rotationDOM.innerText = ["beta", flnum(e.beta), "gamma", flnum(e.gamma), "alpha", flnum(e.alpha)];
+}
 
-      global.panorama.setPov({
-        heading: global.currentHeading / 4,
-        pitch: 0,
-        zoom: 1
-      });
+function handleMotionEvent (e) {
+  var acc = e.acceleration;
+  global.motionDOM.innerText = ["accX", flnum(acc.x * 10)]
+  // Functionaliy not working as expected
+  if (acc.x * 10 < -20) {
+    moveForward(global.panorama);
+    moveForward(global.panorama2);
+  }
+}
 
-      // alphaDOM.innerText = alpha;
-      // betaDOM.innerText = beta;
-      // gammaDOM.innerText = gamma;
-      accDOM.innerText = acc.x;
-      rotG.innerText = rotGamma;
-    }
+window.onload = function () {
+  global.rotationDOM = document.getElementById("rotation");
+  global.motionDOM = document.getElementById("motion");
 
-    // window.addEventListener("deviceorientation", handleOrientationEvent, false);
-    window.addEventListener("devicemotion", handleOrientationEvent, false);
+  // JQuery Mobile detects if the window supports tap or click
+  var tapOrClick = $.support.touch ? "tap" : "click";
+  // event handlers / listeners
+  $("html").on(tapOrClick, paneSwitcher)
+  window.addEventListener("deviceorientation", handleOrientationEvent, false);
+  window.addEventListener("devicemotion", handleMotionEvent, false);
+  document.getElementById("wrapper").requestFullscreen();
+  window.scrollTo(0,1);
 }
   </script>
   <script async defer

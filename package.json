@@ -13,6 +13,8 @@
     "express": "^4.13.4",
     "headtrackr": "0.0.1",
     "morgan": "^1.7.0",
-    "nodemon": "^1.9.0"
+    "nodemon": "^1.9.0",
+    "three": "^0.74.0",
+    "three.js": "^0.73.2"
   }
 }

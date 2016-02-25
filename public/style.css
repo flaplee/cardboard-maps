@@ -1,11 +1,49 @@
-
-#pano {
-  float: left;
-  height: 100%;
+#wrapper {
   width: 100%;
-  position: absolute;
+  height: 100%;
+  display: inline-block;
+  pointer-events: none;
 }
+
+/*#leftEye, #rightEye {
+  float:left;
+}*/
+
+#pano, #pano2 {
+  height: 325px;
+  width: 325px;
+  float:left;
+  z-index:1;
+}
+
+#moveText {
+  position: absolute;
+  z-index: 2;
+  margin-left: 10px;
+}
+
+/*#overlay, #overlay2 {
+  background: transparent; 
+  height: 325px;
+  width: 325px;
+  z-index:5;
+  position: relative;
+}*/
 
 body {
   overflow: hidden;
+}
+
+p {
+  color: white;
+}
+
+#inputVideo, #inputCanvas {
+/*    margin-left: 10px;
+  margin-top: 10px;*/
+  bottom: 15px;
+  right: 15px;
+  /*this prevents the canvas from not overlaping with the video*/
+  position: absolute;
+  border-radius: 5px;
 }
